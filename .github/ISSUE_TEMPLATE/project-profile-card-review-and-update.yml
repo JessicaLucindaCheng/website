@@ -10,7 +10,7 @@ body:
   - type: markdown
     attributes:
       value: "As a product manager, I want my project's details to be up to date on the Hack for LA website."
-  - type: dropdown
+  - type: checkboxes
     id: project-name
     attributes:
       label: Project Name
