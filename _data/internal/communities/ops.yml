@@ -34,13 +34,6 @@ leadership:
       slack: https://hackforla.slack.com/team/U078U294XB6
       github: https://github.com/RSkuma
     picture: https://avatars.githubusercontent.com/RSkuma
-  - name: Sudha Raamakrishnan
-    github-handle: sudhara
-    role: Ops PM
-    links:
-      slack: https://hackforla.slack.com/team/U07FJRNN9MK
-      github: https://github.com/sudhara
-    picture: https://avatars.githubusercontent.com/sudhara
   - name: Dean Church
     github-handle: Rankazze
     role: Co-lead
@@ -48,6 +41,13 @@ leadership:
       slack: https://hackforla.slack.com/team/UJR0UKBN1
       github: https://github.com/Rankazze
     picture: https://avatars.githubusercontent.com/Rankazze
+  - name: Brittany Sims
+    github-handle: brittanyms
+    role: Co-lead
+    links:
+      slack: https://hackforla.slack.com/team/U06E9RFGE5A
+      github: https://github.com/brittanyms
+    picture: https://avatars.githubusercontent.com/brittanyms
 
 links:
   - name: Slack

@@ -19,6 +19,7 @@ const [
   er,
   epic,
   dependency,
+  skillsIssueCompleted,
 ] = [
   "statusUpdated",
   "statusInactive1",
@@ -26,19 +27,24 @@ const [
   "draft",
   "er",
   "epic",
-  "dependency"
+  "dependency",
+  "skillsIssueCompleted",
 ].map(retrieveLabelDirectory);
 
 const updatedByDays = 3;                // If last update update  3 days, the issue is considered updated
 const commentByDays = 7;                // If last update between 7 to 14 days ago, issue is outdated and needs update
 const inactiveUpdatedByDays = 14;       // If last update greater than 14 days ago, the issue is considered inactive
+const upperLimitDays = 30;              // Bot-generated comments older than this are not checked by minimizeComments()
 
 const threeDayCutoffTime = new Date();
 threeDayCutoffTime.setDate(threeDayCutoffTime.getDate() - updatedByDays);
 const sevenDayCutoffTime = new Date();
 sevenDayCutoffTime.setDate(sevenDayCutoffTime.getDate() - commentByDays);
+sevenDayCutoffTime.setMinutes(sevenDayCutoffTime.getMinutes() + 10);     //  Set cutoff time to slightly less than 7 days ago
 const fourteenDayCutoffTime = new Date();
 fourteenDayCutoffTime.setDate(fourteenDayCutoffTime.getDate() - inactiveUpdatedByDays);
+const upperLimitCutoffTime = new Date();
+upperLimitCutoffTime.setDate(upperLimitCutoffTime.getDate() - upperLimitDays);  
 
 
 
@@ -96,7 +102,7 @@ async function main({ g, c }) {
  * @returns {Promise<Array>} issueNums     - an array of open, assigned, and statused issue numbers
  */
 async function getIssueNumsFromRepo() {
-  const labelsToExclude = [draft, er, epic, dependency];
+  const labelsToExclude = [draft, er, epic, dependency, skillsIssueCompleted];
   let issueNums = [];
   let pageNum = 1;
   let result = [];
@@ -184,8 +190,8 @@ function isTimelineOutdated(timeline, issueNum, assignees) { // assignees is an 
       lastAssignedTimestamp = eventTimestamp;
     }
 
-    // If this event is more than 7 days old AND this event is a comment by the GitHub Actions Bot, then hide the comment as outdated.
-    if (!isMomentRecent(eventObj.created_at, sevenDayCutoffTime) && eventType === 'commented' && isCommentByBot(eventObj)) { 
+    // If this event is more than 7 days old but less than the upperLimitCutoffTime AND this event is a comment by the GitHub Actions Bot, then hide the comment as outdated.
+    if (isMomentRecent(eventObj.created_at, upperLimitCutoffTime) && !isMomentRecent(eventObj.created_at, sevenDayCutoffTime) && eventType === 'commented' && isCommentByBot(eventObj)) { 
       console.log(`Comment ${eventObj.node_id} is outdated (i.e. > 7 days old) and will be minimized.`);
       commentsToBeMinimized.push(eventObj.node_id); // retain node id so its associated comment can be minimized later
     }
@@ -365,6 +371,12 @@ function formatComment(assignees, labelString) {
 function isCommentByBot(data) {
   let botLogin = "github-actions[bot]";
   let hflaBotLogin = "HackforLABot";
+  // If the comment includes the MARKER, return false so it is not minimized
+  let MARKER = '<!-- Skills Issue Activity Record -->'; 
+  if (data.body.includes(MARKER)) {
+    console.log(`Found "Skills Issue Activity Record" - do not minimize`);
+    return false; 
+  }
   return data.actor.login === botLogin || data.actor.login === hflaBotLogin;
 }
 
